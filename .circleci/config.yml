@@ -149,14 +149,14 @@ workflows:
       - configure:
           requires:
             - install_lint
-      - create-large-cluster:
-          cluster-name: prakash-capstone
-          requires:
-            - configure
+#      - create-large-cluster:
+#          cluster-name: prakash-capstone
+#          requires:
+#            - configure
       - testcluster:
           cluster-name: prakash-capstone
           requires:
-            - create-large-cluster
+            - configure
       - createdeployment:
           cluster-name: prakash-capstone
           requires:
