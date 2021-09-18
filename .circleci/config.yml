@@ -69,8 +69,8 @@ jobs:
           name: login build run docker impage
           command: |
             docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
-            docker build -t rajpurp/project55:1.0 .
-            docker run -d --rm --name myapp -p 8081:8080 rajpurp/project55:1.0
+            docker build -t rajpurp/project55:2.0 .
+            docker run -d --rm --name myapp -p 8081:8080 rajpurp/project55:2.0
             sleep 10
             docker container ls
             sleep 5
@@ -84,7 +84,7 @@ jobs:
               docker stop myapp
               exit 1
             fi
-            docker push rajpurp/project55:1.0
+            docker push rajpurp/project55:2.0
       
       
  
@@ -149,14 +149,14 @@ workflows:
       - configure:
           requires:
             - install_lint
-      - create-large-cluster:
-          cluster-name: prakash-capstone
-          requires:
-            - configure
+#      - create-large-cluster:
+#          cluster-name: prakash-capstone
+#          requires:
+#            - configure
       - testcluster:
           cluster-name: prakash-capstone
           requires:
-            - create-large-cluster
+            - configure
       - createdeployment:
           cluster-name: prakash-capstone
           requires:
@@ -167,13 +167,10 @@ workflows:
             - createdeployment              
       - aws-eks/update-container-image:
           cluster-name: prakash-capstone
-          container-image-updates: 'prakash-capstone-deployment=rajpurp/project55:1.0'
+          container-image-updates: 'prakash-capstone-deployment=rajpurp/project55:2.0'
           get-rollout-status: true
           record: true
           requires:
             - testdeployment
           resource-name: deployment/prakash-capstone-deployment        
-#     - aws-eks/delete-cluster:
-#         cluster-name: prakash-capstone
-#         requires:
-#          - aws-eks/update-container-image
+

@@ -21,7 +21,7 @@ spec:
         app: prakash-capstone-deployment
     spec:
       containers:
-        - image: rajpurp/project55:1.0
+        - image: rajpurp/project55:2.0
           imagePullPolicy: Always
           name: prakash-capstone-deployment
           ports:
