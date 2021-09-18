@@ -32,7 +32,7 @@ jobs:
       - run:
           name: login build run docker impage
           command: |
-            cat ~/my_password.txt | docker login --username rajpurp --password-stdin
+            docker login -u ${UID} -p ${PWD}
             docker build -t rajpurp/project55:1.0 .
             docker run -d --rm --name myapp -p 8081:8080 rajpurp/project55:1.0
             sleep 10
