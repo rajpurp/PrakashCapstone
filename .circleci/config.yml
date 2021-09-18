@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
   kubernetes: circleci/kubernetes@0.12.0
-  aws-eks: circleci/aws-eks@0.2.3
+  aws-eks: circleci/aws-eks@1.1.0
 
 jobs:
   install_lint:
@@ -32,9 +32,9 @@ jobs:
       - run:
           name: login build run docker impage
           command: |
-            docker login -u ${UID} -p ${PWD}
-            docker build -t rajpurp/project5:1.0 .
-            docker run -d --rm --name myapp -p 8081:8080 rajpurp/project5:1.0
+            cat ~/my_password.txt | docker login --username rajpurp --password-stdin
+            docker build -t rajpurp/project55:1.0 .
+            docker run -d --rm --name myapp -p 8081:8080 rajpurp/project55:1.0
             sleep 10
             docker container ls
             sleep 5
@@ -48,8 +48,9 @@ jobs:
               docker stop myapp
               exit 1
             fi
-            docker push rajpurp/project5:1.0
-            
+            docker push rajpurp/project55:1.0
+      
+
 workflows:
   default:
     jobs:
