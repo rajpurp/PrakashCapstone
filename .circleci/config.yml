@@ -23,7 +23,37 @@ jobs:
             make lint
           no_output_timeout: 25m 
 
+          
+  configure:
+    machine: true
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run:
+          name: Build, Test and Upload docker image
+          command: |
+            docker login -u ${UID} -p ${PWD}
+            docker build -t rajpurp/project5:1.0 .
+            docker run -d --rm --name myapp -p 8081:8080 rajpurp/project5:1.0
+            sleep 10
+            docker container ls
+            sleep 5
+            export URL="http://localhost:8081"
+            export output=$(curl -s $URL)
+            echo "Output of curl : $output"
+            if [[ $output == *"Prakash"* ]]; then
+               echo "Success"
+              docker stop myapp
+            else
+              docker stop myapp
+              exit 1
+            fi
+            docker push rajpurp/project5:1.0
+            
 workflows:
   default:
     jobs:
       - install_lint
+      - configure:
+          requires:
+            - install_lint
