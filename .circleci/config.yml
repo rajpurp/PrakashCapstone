@@ -51,58 +51,59 @@ jobs:
             docker push rajpurp/project55:1.0
       
       
-
- testdeployment:
-   executor: aws-eks/python3
-   parameters:
-     cluster-name:
-       description: |
-         Name of the EKS cluster
-       type: string
-   steps:
-     - kubernetes/install
-     - aws-eks/update-kubeconfig-with-authenticator:
-         cluster-name: << parameters.cluster-name >>
-     - run:
-         name: Kube cluster
-         command: |
-           kubectl get svc
-           kubectl get nodes
-           kubectl get deployment
-           kubectl get pods
-
- createdeployment:
-   executor: aws-eks/python3
-   parameters:
-     cluster-name:
-       description: |
-         Name of the EKS cluster
-       type: string
-   steps:
-     - checkout
-     - aws-eks/update-kubeconfig-with-authenticator:
-         cluster-name: << parameters.cluster-name >>
-         install-kubectl: true
-     - kubernetes/create-or-update-resource:
-         get-rollout-status: true
-         resource-file-path: deployment.yml
-         resource-name: deployment/prakash-capstone-deployment
-
- testcluster:
-   executor: aws-eks/python3
-   parameters:
-     cluster-name:
-       description: |
-         Name of the EKS cluster
-       type: string
-   steps:
-     - kubernetes/install
-     - aws-eks/update-kubeconfig-with-authenticator:
-         cluster-name: << parameters.cluster-name >>
-     - run:
-         name: Kube cluster
-         command: |
-           kubectl get services
+ 
+  testdeployment:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          name: Kube cluster
+          command: |
+            kubectl get svc
+            kubectl get nodes
+            kubectl get deployment
+            kubectl get pods
+ 
+  createdeployment:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - checkout
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+          install-kubectl: true
+      - kubernetes/create-or-update-resource:
+          get-rollout-status: true
+          resource-file-path: deployment.yml
+          resource-name: deployment/prakash-capstone-deployment
+ 
+  testcluster:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          name: Kube cluster
+          command: |
+            kubectl get services
+ 
 
 ############
 workflows:
