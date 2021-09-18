@@ -116,7 +116,7 @@ workflows:
       - aws-eks/create-cluster:
           cluster-name: prakash-capstone
           requires:
-            - configure-image
+            - configure
       - testcluster:
           cluster-name: prakash-capstone
           requires:
@@ -124,18 +124,18 @@ workflows:
       - createdeployment:
           cluster-name: prakash-capstone
           requires:
-            - test-cluster
+            - testcluster
       - testdeployment:
           cluster-name: prakash-capstone
           requires:
-            - create-deployment              
+            - createdeployment              
       - aws-eks/update-container-image:
           cluster-name: prakash-capstone
           container-image-updates: 'prakash-capstone-deployment=rajpurp/project55:1.0'
           get-rollout-status: true
           record: true
           requires:
-            - test-deployment
+            - testdeployment
           resource-name: deployment/prakash-capstone-deployment        
 #     - aws-eks/delete-cluster:
 #         cluster-name: prakash-capstone
