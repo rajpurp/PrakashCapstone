@@ -23,7 +23,7 @@ jobs:
             make lint
           no_output_timeout: 25m 
 
- workflows:
-  say-hello-workflow:
+workflows:
+  default:
     jobs:
       - install_lint
