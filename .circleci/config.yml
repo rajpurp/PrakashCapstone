@@ -1,133 +1,142 @@
---- 
-jobs: 
-  configure: 
-    machine: true
-    steps: 
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+  kubernetes: circleci/kubernetes@0.12.0
+  aws-eks: circleci/aws-eks@1.1.0
+
+jobs:
+  install_lint:
+    docker:
+      - image: circleci/python:3.7.3-stretch
+    steps:
       - checkout
-      - 
-        run: 
+      - run:
+          name: install required dependencies using requirement.txt
           command: |
-              docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
-              docker build -t rajpurp/project55:1.0 .
-              docker run -d --rm --name myapp -p 8081:8080 rajpurp/project55:1.0
-              sleep 10
-              docker container ls
-              sleep 5
-              export URL="http://localhost:8081"
-              export output=$(curl -s $URL)
-              echo "Output of curl : $output"
-              if [[ $output == *"Prakash"* ]]; then
-                 echo "Success"
-                docker stop myapp
-              else
-                docker stop myapp
-                exit 1
-              fi
-              docker push rajpurp/project55:1.0
-          name: "login build run docker impage"
+            python3 -m venv devops
+            source devops/bin/activate
+            make install
+      - run:
+          name: run lint Docker and app
+          command: |
+            source devops/bin/activate
+            make lint
+          no_output_timeout: 25m 
+
+          
+  configure:
+    machine: true
     working_directory: ~/app
-  createdeployment: 
-    executor: aws-eks/python3
-    parameters: 
-      cluster-name: 
-        description: "Name of the EKS cluster\n"
-        type: string
-    steps: 
+    steps:
       - checkout
-      - 
-        aws-eks/update-kubeconfig-with-authenticator: 
-          cluster-name: "<< parameters.cluster-name >>"
+      - run:
+          name: login build run docker impage
+          command: |
+            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
+            docker build -t rajpurp/project55:1.0 .
+            docker run -d --rm --name myapp -p 8081:8080 rajpurp/project55:1.0
+            sleep 10
+            docker container ls
+            sleep 5
+            export URL="http://localhost:8081"
+            export output=$(curl -s $URL)
+            echo "Output of curl : $output"
+            if [[ $output == *"Prakash"* ]]; then
+               echo "Success"
+              docker stop myapp
+            else
+              docker stop myapp
+              exit 1
+            fi
+            docker push rajpurp/project55:1.0
+      
+      
+ 
+  testdeployment:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          name: Kube cluster
+          command: |
+            kubectl get svc
+            kubectl get nodes
+            kubectl get deployment
+            kubectl get pods
+ 
+  createdeployment:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - checkout
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
           install-kubectl: true
-      - 
-        kubernetes/create-or-update-resource: 
+      - kubernetes/create-or-update-resource:
           get-rollout-status: true
           resource-file-path: deployment.yml
           resource-name: deployment/prakash-capstone-deployment
-  install_lint: 
-    docker: 
-      - 
-        image: "circleci/python:3.7.3-stretch"
-    steps: 
-      - checkout
-      - 
-        run: 
-          command: |
-              python3 -m venv devops
-              source devops/bin/activate
-              make install
-          name: "install required dependencies using requirement.txt"
-      - 
-        run: 
-          command: |
-              source devops/bin/activate
-              make lint
-          name: "run lint Docker and app"
-          no_output_timeout: 25m
-  testcluster: 
+ 
+  testcluster:
     executor: aws-eks/python3
-    parameters: 
-      cluster-name: 
-        description: "Name of the EKS cluster\n"
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
         type: string
-    steps: 
+    steps:
       - kubernetes/install
-      - 
-        aws-eks/update-kubeconfig-with-authenticator: 
-          cluster-name: "<< parameters.cluster-name >>"
-      - 
-        run: 
-          command: "kubectl get services\n"
-          name: "Kube cluster"
-  testdeployment: 
-    executor: aws-eks/python3
-    parameters: 
-      cluster-name: 
-        description: "Name of the EKS cluster\n"
-        type: string
-    steps: 
-      - kubernetes/install
-      - 
-        aws-eks/update-kubeconfig-with-authenticator: 
-          cluster-name: "<< parameters.cluster-name >>"
-      - 
-        run: 
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          name: Kube cluster
           command: |
-              kubectl get svc
-              kubectl get nodes
-              kubectl get deployment
-              kubectl get pods
-          name: "Kube cluster"
-orbs: 
-  aws-cli: circleci/aws-cli@2.0.3
-  aws-eks: circleci/aws-eks@1.1.0
-  kubernetes: circleci/kubernetes@0.12.0
-version: 2.1
-workflows: 
-  jobs: 
-    - 
-      aws-eks/create-cluster: 
+            kubectl get services
+ 
+
+
+workflows:
+  jobs:
+      - install_lint
+      - configure:
+          requires:
+            - install_lint
+    - aws-eks/create-cluster:
         cluster-name: prakash-capstone
-    - 
-      testcluster: 
+        requires:
+          - configure-image
+    - testcluster:
         cluster-name: prakash-capstone
-        requires: 
+        requires:
           - aws-eks/create-cluster
-    - 
-      createdeployment: 
+    - createdeployment:
         cluster-name: prakash-capstone
-        requires: 
+        requires:
           - test-cluster
-    - 
-      testdeployment: 
+    - testdeployment:
         cluster-name: prakash-capstone
-        requires: 
-          - create-deployment
-    - 
-      aws-eks/update-container-image: 
+        requires:
+          - create-deployment              
+    - aws-eks/update-container-image:
         cluster-name: prakash-capstone
-        container-image-updates: "prakash-capstone-deployment=rajpurp/project55:1.0"
+        container-image-updates: 'prakash-capstone-deployment=rajpurp/project55:1.0'
         get-rollout-status: true
         record: true
-        requires: 
+        requires:
           - test-deployment
-        resource-name: deployment/prakash-capstone-deployment
+        resource-name: deployment/prakash-capstone-deployment        
+#     - aws-eks/delete-cluster:
+#         cluster-name: prakash-capstone
+#         requires:
+#          - aws-eks/update-container-image
