@@ -105,37 +105,37 @@ jobs:
             kubectl get services
  
 
-############
+
 workflows:
-    jobs:
+  jobs:
 #      - install_lint
 #      - configure:
 #          requires:
 #            - install_lint
-      - aws-eks/create-cluster:
-          cluster-name: prakash-capstone
+    - aws-eks/create-cluster:
+        cluster-name: prakash-capstone
 #         requires:
 #           - configure-image
-      - testcluster:
-          cluster-name: prakash-capstone
-          requires:
-            - aws-eks/create-cluster
-      - createdeployment:
-            cluster-name: prakash-capstone
-            requires:
-              - test-cluster
-      - testdeployment:
-          cluster-name: prakash-capstone
-          requires:
-            - create-deployment              
-      - aws-eks/update-container-image:
-          cluster-name: prakash-capstone
-          container-image-updates: 'prakash-capstone-deployment=rajpurp/project55:1.0'
-          get-rollout-status: true
-          record: true
-          requires:
-           - test-deployment
-          resource-name: deployment/prakash-capstone-deployment        
+    - testcluster:
+        cluster-name: prakash-capstone
+        requires:
+          - aws-eks/create-cluster
+    - createdeployment:
+        cluster-name: prakash-capstone
+        requires:
+          - test-cluster
+    - testdeployment:
+        cluster-name: prakash-capstone
+        requires:
+          - create-deployment              
+    - aws-eks/update-container-image:
+        cluster-name: prakash-capstone
+        container-image-updates: 'prakash-capstone-deployment=rajpurp/project55:1.0'
+        get-rollout-status: true
+        record: true
+        requires:
+          - test-deployment
+        resource-name: deployment/prakash-capstone-deployment        
 #     - aws-eks/delete-cluster:
 #         cluster-name: prakash-capstone
 #         requires:
