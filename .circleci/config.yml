@@ -32,7 +32,7 @@ jobs:
       - run:
           name: login build run docker impage
           command: |
-            docker login -u ${AWSUID} -p ${AWSPWD}
+            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
             docker build -t rajpurp/project55:1.0 .
             docker run -d --rm --name myapp -p 8081:8080 rajpurp/project55:1.0
             sleep 10
